@@ -1,37 +1,30 @@
 import 'package:flutter_clean_posts_interview/domain/entities/post.dart';
 
 class PostModel {
-  final int userId;
   final int id;
+  final int userId;
   final String title;
   final String body;
 
-  const PostModel({
-    required this.userId,
+  PostModel({
     required this.id,
+    required this.userId,
     required this.title,
     required this.body,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
-      userId: json['userId'] is int
-          ? json['userId'] as int
-          : int.parse(json['userId'].toString()),
-      id: json['id'] is int
-          ? json['id'] as int
-          : int.parse(json['id'].toString()),
-      title: json['title']?.toString() ?? '',
-      body: json['body']?.toString() ?? '',
+      id: json['id'] as int,
+      userId: json['userId'] as int,
+      title: json['title'] as String,
+      body: json['body'] as String,
     );
   }
+}
 
+extension PostModelMapper on PostModel {
   Post toEntity() {
-    return Post(
-      userId: userId,
-      id: id,
-      title: title,
-      body: body,
-    );
+    return Post(id: id, userId: userId, title: title, body: body);
   }
 }

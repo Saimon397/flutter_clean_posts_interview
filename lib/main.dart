@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_clean_posts_interview/blocs/posts/post_list_bloc.dart';
-import 'package:flutter_clean_posts_interview/blocs/posts/post_list_event.dart';
-import 'package:flutter_clean_posts_interview/routes/app_router.dart';
-import 'package:flutter_clean_posts_interview/di/injection.dart';
+import 'blocs/posts/post_list_bloc.dart';
+import 'blocs/posts/post_list_event.dart';
+import 'routes/app_router.dart';
+import 'di/injection.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // inizializza get_it
   await initDependencies();
-
   runApp(const MyApp());
 }
 

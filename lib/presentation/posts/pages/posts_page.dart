@@ -26,8 +26,6 @@ class _PostsPageState extends State<PostsPage> {
         setState(() {});
       });
     _scrollController = ScrollController()..addListener(_onScroll);
-
-    context.read<PostListBloc>().add(LoadInitialPosts());
   }
 
   @override

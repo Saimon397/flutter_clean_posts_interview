@@ -6,8 +6,7 @@ class SearchPosts {
 
   SearchPosts(this.repository);
 
-  Future<List<Post>> call(String query, {required int page, int limit = 10}) {
-    return repository.searchPosts(query, page, limit: limit);
+  Future<List<Post>> call(String query) {
+    return repository.searchPosts(query);
   }
 }
-

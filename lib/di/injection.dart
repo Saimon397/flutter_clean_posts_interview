@@ -11,7 +11,7 @@ import 'package:flutter_clean_posts_interview/utilities/auth_service.dart';
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
-  // 🔹 Dio client
+  // Dio client
   sl.registerLazySingleton<Dio>(
     () => Dio(
       BaseOptions(
@@ -19,36 +19,33 @@ Future<void> initDependencies() async {
         contentType: 'application/json',
         headers: const {
           'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Flutter Dio Client)', // non gli piaceva lo user agentn mi tornava 403 quindi lo messo tipo browser
+          'User-Agent':
+              'Mozilla/5.0 (Flutter Dio Client)', // non gli piaceva lo user agentn mi tornava 403 quindi lo messo tipo browser
         },
         validateStatus: (status) => status != null && status < 500,
       ),
     ),
   );
 
-  // 🔹 Data sources
+  // Data sources
   sl.registerLazySingleton<PostRemoteDataSource>(
     () => PostRemoteDataSourceImpl(sl<Dio>()),
   );
 
-  // 🔹 Repository
+  // Repository
   sl.registerLazySingleton<PostRepository>(
     () => PostRepositoryImpl(sl<PostRemoteDataSource>()),
   );
 
-  // 🔹 Use cases
-  sl.registerLazySingleton<GetPosts>(
-    () => GetPosts(sl<PostRepository>()),
-  );
+  // Use cases
+  sl.registerLazySingleton<GetPosts>(() => GetPosts(sl<PostRepository>()));
 
   sl.registerLazySingleton<SearchPosts>(
     () => SearchPosts(sl<PostRepository>()),
   );
 
-  // 🔹 Services
-  sl.registerLazySingleton<AuthService>(
-    () => AuthService(),
-  );
+  // Services
+  sl.registerLazySingleton<AuthService>(() => AuthService());
 
   // 🔹 BLoC
   sl.registerFactory<PostListBloc>(

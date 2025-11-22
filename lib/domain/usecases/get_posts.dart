@@ -6,7 +6,7 @@ class GetPosts {
 
   GetPosts(this.repository);
 
-  Future<List<Post>> call({required int page, int limit = 10}) {
-    return repository.getPosts(page, limit: limit);
+  Future<List<Post>> call() {
+    return repository.getPosts();
   }
 }
