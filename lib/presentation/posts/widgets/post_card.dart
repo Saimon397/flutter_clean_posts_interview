@@ -8,30 +8,69 @@ class PostCard extends StatelessWidget {
   final Post post;
   const PostCard({super.key, required this.post});
 
+  Future<bool> _showPinDialog(BuildContext context) async {
+    final controller = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Inserisci PIN'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            decoration: const InputDecoration(hintText: 'Es. 1234'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final ok = controller.text == '1234';
+                Navigator.of(ctx).pop(ok);
+              },
+              child: const Text('Conferma'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Card(
-      elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          // ignore: deprecated_member_use
-          color: colorScheme.outlineVariant.withOpacity(0.4),
-          width: 0.8,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0.5,
       child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap: () async {
           final authService = sl<AuthService>();
           final messenger = ScaffoldMessenger.of(context);
           final router = GoRouter.of(context);
-          final ok = await authService.authenticate();
 
+          // Tenta biometria
+          final biometricOk = await authService.authenticateBiometrics();
+          if (!context.mounted) return;
+
+          bool ok = biometricOk;
+
+          // Se biometria fallisce fallback PIN
+          if (!biometricOk) {
+            ok = await _showPinDialog(context);
+            if (!context.mounted) return;
+          }
+
+          // Se fallisce anche il PIN esce snackbar
           if (!ok) {
             messenger.showSnackBar(
               const SnackBar(content: Text('Autenticazione fallita')),
@@ -39,6 +78,7 @@ class PostCard extends StatelessWidget {
             return;
           }
 
+          // Auth ok vai al dettaglio
           router.pushNamed(
             'postDetail',
             pathParameters: {'id': post.id.toString()},
@@ -46,38 +86,38 @@ class PostCard extends StatelessWidget {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Badge con ID post
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   // ignore: deprecated_member_use
                   color: colorScheme.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(999),
+                  shape: BoxShape.circle,
                 ),
+                alignment: Alignment.center,
                 child: Text(
-                  '#${post.id}',
-                  style: textTheme.labelMedium?.copyWith(
-                    color: colorScheme.primary,
+                  post.id.toString(),
+                  style: TextStyle(
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              // Titolo + body
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       post.title,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: textTheme.titleMedium?.copyWith(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -86,18 +126,32 @@ class PostCard extends StatelessWidget {
                       post.body,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: textTheme.bodyMedium?.copyWith(
-                        // ignore: deprecated_member_use
-                        color: colorScheme.onSurface.withOpacity(0.7),
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: 14,
+                          // ignore: deprecated_member_use
+                          color: colorScheme.primary.withOpacity(0.8),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Protected details',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                // ignore: deprecated_member_use
+                                color: colorScheme.primary.withOpacity(0.9),
+                              ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: colorScheme.outline,
               ),
             ],
           ),
